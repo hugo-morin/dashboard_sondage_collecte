@@ -166,7 +166,6 @@ def is_open_text(series, threshold=15):
 
 question_cols = df.columns[1:]
 
-closed_questions = [c for c in question_cols if not is_open_text(df[c])]
 open_questions = [
     "Qu'est-ce qui vous aiderait ou motiverait à recycler davantage?",
     "Qu'est-ce qui vous aiderait ou motiverait à composter davantage?",
@@ -242,9 +241,12 @@ for c, (label, col_name, accepted, text_suffix) in zip(cols, metrics_config):
 # QUESTIONS FERMÉES – VISUALISATION
 # -------------------------------------------------------------------
 
-st.header("📊 Questions à choix")
+st.header("📊 Réponses collectées")
 
-for col in closed_questions:
+for col in question_cols:
+    if col in open_questions : 
+        continue
+    
     st.subheader(col)
 
     counts = (
@@ -287,6 +289,16 @@ for col in closed_questions:
 
 st.header("🧠 Ce qui ressort des réponses ouvertes (synthèse)")
 
+# -------------------------------------------------------------------
+# NOTE DE FIN
+# -------------------------------------------------------------------
+
+st.caption(
+    "Analyse exploratoire – à des fins de discussion interne. "
+    "Les réponses ouvertes sont regroupées automatiquement "
+    "pour dégager des tendances, sans jugement de valeur."
+)
+
 for col in open_questions:
     st.subheader(col)
 
@@ -321,12 +333,3 @@ for col in open_questions:
     st.divider()
 
 
-# -------------------------------------------------------------------
-# NOTE DE FIN
-# -------------------------------------------------------------------
-
-st.caption(
-    "Analyse exploratoire – à des fins de discussion interne. "
-    "Les réponses ouvertes sont regroupées automatiquement "
-    "pour dégager des tendances, sans jugement de valeur."
-)

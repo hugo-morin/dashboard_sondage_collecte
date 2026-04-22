@@ -218,24 +218,28 @@ for col in question_cols:
         color_discrete_map=COLOR_MAP
     )
 
+    
     fig.update_traces(
         textinfo="label+percent",
-        textposition="auto",
+        textposition="inside",
         insidetextorientation="horizontal",
+        textfont=dict(size=13, color="white"),
         marker=dict(line=dict(color="white", width=1))
     )
 
     fig.update_layout(
         title=dict(
-            text=wrap_title(col),
+            text=wrap_title(col, max_len=45, max_lines=3),
             x=0.5,
+            y=0.95,
             xanchor="center",
-            font=dict(size=16)
+            yanchor="top",
+            font=dict(size=17)
         ),
-        uniformtext=dict(minsize=12, mode="hide"),
         showlegend=False,
-        margin=dict(l=40, r=40, t=70, b=20)
+        margin=dict(t=110, l=40, r=40, b=20)
     )
+
 
 
 

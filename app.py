@@ -167,7 +167,11 @@ def is_open_text(series, threshold=15):
 question_cols = df.columns[1:]
 
 closed_questions = [c for c in question_cols if not is_open_text(df[c])]
-open_questions = [c for c in question_cols if is_open_text(df[c])]
+open_questions = [
+    "Qu'est-ce qui vous aiderait ou motiverait à recycler davantage?",
+    "Qu'est-ce qui vous aiderait ou motiverait à composter davantage?",
+    "Avez-vous d'autres questions ou commentaires à nous dire, par rapport à la collecte de matières résiduelles?"
+]
 
 # -------------------------------------------------------------------
 # VUE D’ENSEMBLE – QUESTIONS FERMÉES CLÉS
@@ -296,10 +300,11 @@ for col in open_questions:
     summary = (
         non_empty
         .value_counts()
-        .rename("n")
+        .to_frame(name="n")
         .reset_index()
-        .rename(columns={"index": "Intent"})
     )
+
+    summary = summary.rename(columns={col: "Intent"})
 
     summary["% incl. vides"] = (summary["n"] / total_n * 100).round(1)
     summary["% excl. vides"] = (summary["n"] / len(non_empty) * 100).round(1)

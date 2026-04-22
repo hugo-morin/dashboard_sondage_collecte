@@ -1,2 +1,8 @@
+# Scripts de lancement locaux
 *.bat
-sondage_collecte_clean.xlsx
+
+# Tous les fichiers Excel
+*.xlsx
+
+# SAUF le fichier anonymisé
+!sondage_collecte_anonymized.xlsx

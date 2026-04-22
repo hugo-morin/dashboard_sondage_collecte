@@ -127,7 +127,7 @@ st.markdown(
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel("sondage_collecte_clean.xlsx", engine="openpyxl")
+    df = pd.read_excel("sondage_collecte_anonymized.xlsx", engine="openpyxl")
     df.columns = [c.strip() for c in df.columns]
     return df
 
@@ -281,39 +281,37 @@ for col in closed_questions:
 # -------------------------------------------------------------------
 
 
-st.header("🧠 Ce qui revient dans les commentaires")
+st.header("🧠 Ce qui ressort des réponses ouvertes (synthèse)")
 
 for col in open_questions:
     st.subheader(col)
 
-    raw_texts = df_f[col].dropna()
-    if len(raw_texts) < 5:
-        st.info("Pas assez de réponses pour une analyse.")
+    total_n = len(df_f)
+    non_empty = df_f[col].dropna()
+
+    if len(non_empty) == 0:
+        st.info("Aucune réponse.")
         continue
 
-    # --- Analyse des intentions ---
-    records = []
+    summary = (
+        non_empty
+        .value_counts()
+        .rename("n")
+        .reset_index()
+        .rename(columns={"index": "Intent"})
+    )
 
-    for txt in raw_texts:
-        cleaned = clean_text(txt)
-        intent = detect_intent(cleaned)
+    summary["% incl. vides"] = (summary["n"] / total_n * 100).round(1)
+    summary["% excl. vides"] = (summary["n"] / len(non_empty) * 100).round(1)
 
-        records.append({
-            "verbatim": txt,
-            "intent": intent
-        })
+    summary = summary[summary["Intent"] != "Autre / non classé"]
 
-    df_intents = pd.DataFrame(records)
+    summary = summary.sort_values("% excl. vides", ascending=False)
 
-    # --- Affichage par idée ---
-    for intent, group in df_intents.groupby("intent"):
-        if intent == "Autre / non classé":
-            continue  # optionnel : tu peux l'afficher si tu veux
-
-        st.markdown(f"#### 🔹 {intent}")
-
-        for v in group["verbatim"].head(5):
-            st.markdown(f"> {v}")
+    st.dataframe(
+        summary[["Intent", "% incl. vides", "% excl. vides"]],
+        width="stretch"
+    )
 
     st.divider()
 

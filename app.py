@@ -8,98 +8,39 @@ import numpy as np
 import plotly.express as px
 
 
-from collections import Counter
-import math
-
-
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem.snowball import FrenchStemmer
-from unidecode import unidecode
-import re
-
-
-nltk.download("stopwords")
-
-french_stopwords = set(stopwords.words("french"))
-stemmer = FrenchStemmer()
-
-domain_stopwords = {
-    "rien", "aucun", "aucune", "ok", "correct",
-    "inform", "information", "informe",
-    "fait", "faire", "deja", "déjà",
-    "merci"
+COLOR_MAP = {
+    "Toujours": "#2E7D32",           # vert foncé
+    "Souvent": "#81C784",            # vert pâle
+    "Rarement": "#FDD835",           # jaune
+    "Jamais": "#E57373",             # rouge doux
+    "C'est dur de s'y retrouver...": "#BDBDBD", #gris
+    
+    "Oui": "#2E7D32",   # même vert foncé
+    "Non": "#E57373"    # même rouge doux
+    
+    
 }
 
-concept_map = {
-    "recycl": "recyclage",
-    "recyclag": "recyclage",
-    "recycler": "recyclage",
-
-    "collect": "collecte",
-    "ramass": "collecte",
-    "cueil": "collecte",
-
-    "compost": "compost",
-    "odeur": "odeurs",
-    "puant": "odeurs",
-
-    "horaire": "horaire",
-    "semaine": "horaire",
-    "frequenc": "frequence"
-}
-
-INTENT_RULES = {
-    "information": {
-        "keywords": ["info", "inform", "clar", "savoir", "connaitr", "expliqu"],
-        "label": "Manque d’information claire"
-    },
-    "horaire": {
-        "keywords": ["jour", "lundi", "jeudi", "semaine", "horaire", "frequenc"],
-        "label": "Horaire ou fréquence de collecte"
-    },
-    "bac": {
-        "keywords": ["bac", "volume", "plein", "capac"],
-        "label": "Capacité ou gestion des bacs"
-    },
-    "compost": {
-        "keywords": ["compost", "odeur", "ete", "faune", "sac"],
-        "label": "Gestion du compost et des odeurs"
-    }
-}
-
-def detect_intent(cleaned_text):
-    for intent in INTENT_RULES.values():
-        if any(k in cleaned_text for k in intent["keywords"]):
-            return intent["label"]
-    return "Autre / non classé"
 
 
-def clean_text(text):
-    text = str(text).lower()
-    text = unidecode(text)
-    text = re.sub(r"[^a-z ]", " ", text)
 
-    normalized_tokens = []
+def wrap_title(text, max_len=40, max_lines=2):
+    words = text.split()
+    lines, current = [], ""
 
-    for t in text.split():
-        if (
-            t in french_stopwords
-            or t in domain_stopwords
-            or len(t) <= 2
-        ):
-            continue
+    for w in words:
+        if len(current) + len(w) <= max_len:
+            current += " " + w
+        else:
+            lines.append(current.strip())
+            current = w
+        if len(lines) == max_lines:
+            break
 
-        # 1. stemming
-        stem = stemmer.stem(t)
+    if current and len(lines) < max_lines:
+        lines.append(current.strip())
 
-        # 2. normalisation conceptuelle
-        token = concept_map.get(stem, stem)
-
-        normalized_tokens.append(token)
-
-    return " ".join(normalized_tokens)
-
+    return "<br>".join(lines)
 
 
 # -------------------------------------------------------------------
@@ -218,11 +159,14 @@ cols = st.columns(len(metrics_config))
 
 for c, (label, col_name, accepted, text_suffix) in zip(cols, metrics_config):
     rate = rate_for_values(col_name, accepted)
-    
+
     if not np.isnan(rate):
         c.markdown(
             f"""
             <div style="text-align:center;">
+                <div style="font-size:1rem; font-weight:500; color:#444; margin-bottom:0.25rem;">
+                    {label}
+                </div>
                 <div style="font-size:2.2rem; font-weight:600;">
                     {rate:.0f} %
                 </div>
@@ -237,17 +181,19 @@ for c, (label, col_name, accepted, text_suffix) in zip(cols, metrics_config):
         c.markdown("–")
 
 
+
 # -------------------------------------------------------------------
 # QUESTIONS FERMÉES – VISUALISATION
 # -------------------------------------------------------------------
 
 st.header("📊 Réponses collectées")
 
+cols = st.columns(2)
+col_idx = 0
+
 for col in question_cols:
-    if col in open_questions : 
+    if col in open_questions:
         continue
-    
-    st.subheader(col)
 
     counts = (
         df_f[col]
@@ -258,29 +204,46 @@ for col in question_cols:
         .reset_index()
         .rename(columns={col: "Réponse"})
     )
-
+    
+    counts["Couleur"] = counts["Réponse"].map(COLOR_MAP)
 
     
-    fig = px.bar(
+    
+    fig = px.pie(
         counts,
-        x="Pourcentage",
-        y="Réponse",
-        orientation="h",
-        text="Pourcentage"
+        names="Réponse",
+        values="Pourcentage",
+        hole=0.4,
+        color="Réponse",
+        color_discrete_map=COLOR_MAP
     )
 
-    fig.update_traces(texttemplate="%{text} %")
-
+    fig.update_traces(
+        textinfo="label+percent",
+        textposition="auto",
+        insidetextorientation="horizontal",
+        marker=dict(line=dict(color="white", width=1))
+    )
 
     fig.update_layout(
-        yaxis=dict(categoryorder="total ascending"),
+        title=dict(
+            text=wrap_title(col),
+            x=0.5,
+            xanchor="center",
+            font=dict(size=16)
+        ),
+        uniformtext=dict(minsize=12, mode="hide"),
         showlegend=False,
-        margin=dict(l=10, r=10, t=10, b=10)
+        margin=dict(l=40, r=40, t=70, b=20)
     )
 
-    st.plotly_chart(fig, width="stretch")
 
-    st.divider()
+
+    with cols[col_idx]:
+        st.plotly_chart(fig, width="stretch")
+
+    col_idx = (col_idx + 1) % 2
+
 
 # -------------------------------------------------------------------
 # ANALYSE DES RÉPONSES OUVERTES – THÈMES
@@ -289,14 +252,10 @@ for col in question_cols:
 
 st.header("🧠 Ce qui ressort des réponses ouvertes (synthèse)")
 
-# -------------------------------------------------------------------
-# NOTE DE FIN
-# -------------------------------------------------------------------
-
 st.caption(
-    "Analyse exploratoire – à des fins de discussion interne. "
-    "Les réponses ouvertes sont regroupées automatiquement "
-    "pour dégager des tendances, sans jugement de valeur."
+    "Analyse exploratoire – à des fins de discussion interne. \n \n"
+    "Les réponses ouvertes ont été regroupées automatiquement"
+    "pour dégager des tendances."
 )
 
 for col in open_questions:

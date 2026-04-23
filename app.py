@@ -288,10 +288,41 @@ for col in open_questions:
 
     summary = summary.sort_values("% excl. vides", ascending=False)
 
-    st.dataframe(
-        summary[["Intent", "% incl. vides", "% excl. vides"]],
-        width="stretch"
+    
+    plot_df = summary[["Intent", "% excl. vides"]].copy()
+    plot_df = plot_df.sort_values("% excl. vides", ascending=False)
+    
+    fig = px.bar(
+        plot_df,
+        x="Intent",
+        y="% excl. vides",
+        text="% excluant les vides",
+        title="Proportion des répondant·es ayant mentionné ce thème",
     )
+
+    fig.update_traces(
+        texttemplate="%{text:.1f} %",
+        textposition="outside"
+    )
+
+    fig.update_layout(
+        xaxis_title="Thème / domaine",
+        yaxis_title="Pourcentage des répondant·es",
+        yaxis_range=[0, plot_df["% excl. vides"].max() * 1.2],
+        uniformtext_minsize=10,
+        uniformtext_mode="hide",
+        margin=dict(t=80, l=40, r=40, b=120)
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    
+    st.caption(
+        "💡 Les pourcentages sont calculés sur l’ensemble des répondant·es qui "
+        "ont répondu à cette question."
+    )
+
+
 
     st.divider()
 

@@ -221,7 +221,7 @@ for col in question_cols:
     
     fig.update_traces(
         textinfo="label+percent",
-        textposition="inside",
+        textposition="auto",
         insidetextorientation="horizontal",
         textfont=dict(size=13, color="white"),
         marker=dict(line=dict(color="white", width=1))
@@ -296,7 +296,7 @@ for col in open_questions:
         plot_df,
         x="Intent",
         y="% excl. vides",
-        text="% excluant les vides",
+        text="% excl. vides",
         title="Proportion des répondant·es ayant mentionné ce thème",
     )
 

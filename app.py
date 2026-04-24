@@ -480,9 +480,9 @@ st.markdown(
     f"""
     <div class="hero-card">
         <span class="eyebrow">Tableau de bord environnemental</span>
-        <h1 class="hero-title">Collecte des matières résiduelles, en version plus humaine et plus claire.</h1>
+        <h1 class="hero-title">Collecte des matières résiduelles.</h1>
         <p class="hero-copy">
-            Cette vue rassemble les principaux signaux du sondage, met en valeur les habitudes de tri
+            Ce tableau de bord offre une analyse du sondage réalisé au printemps 2025 auprès de la population 
             et fait ressortir les thèmes qui méritent d'être clarifiés ou encouragés.
         </p>
         <div class="hero-stats">
@@ -508,9 +508,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.caption(
-    f"Part de résident·es = proportion des répondant·es ayant indiqué « {RESIDENT_LABEL} » dans le profil."
-)
 
 st.markdown("## Vue d'ensemble")
 st.markdown(
@@ -558,8 +555,7 @@ st.markdown("## Réponses collectées")
 st.markdown(
     """
     <div class="section-intro">
-        Chaque question fermée est présentée comme une petite fiche de lecture. Les couleurs gardent
-        la même logique partout pour faciliter le balayage visuel.
+        Chaque question fermée est présentée comme une petite fiche de lecture.
     </div>
     """,
     unsafe_allow_html=True,

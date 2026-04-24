@@ -33,7 +33,6 @@ RESIDENT_LABEL = "Résident(e) d'Entrelacs"
 OPEN_QUESTIONS = [
     "Qu'est-ce qui vous aiderait ou motiverait à recycler davantage?",
     "Qu'est-ce qui vous aiderait ou motiverait à composter davantage?",
-    "Avez-vous d'autres questions ou commentaires à nous dire, par rapport à la collecte de matières résiduelles?",
 ]
 
 
